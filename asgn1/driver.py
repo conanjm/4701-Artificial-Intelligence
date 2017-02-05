@@ -2,15 +2,16 @@ import sys, copy, time, resource
 from math import sqrt
 from collections import deque
 
-nodes_expanded, search_depth, max_fringe_size, max_search_depth = 0, 0, 0, 0
+nodes_expanded, max_fringe_size, max_search_depth = 0, 0, 0
 start_time = time.time();
 
 class State():
-	def __init__(self, board, path):
+	def __init__(self, board, path, depth):
 		self.board = board
 		self.length = len(board)
 		self.idx = self.board.index(0)
 		self.path = path
+		self.depth = depth
 
 	def up(self):
 		# first check whether the '0' is in the first row
@@ -63,18 +64,19 @@ def notInFrontier(frontier, childBoard):
 def bfs(initBoard, goalBoard):
 	# frontier: deque of State
 	# explored: set of tuple of board
-	frontier = deque([State(initBoard, [])])
+	frontier = deque([State(initBoard, [], 0)])
 	explored = set()
 
 	while len(frontier):
+
 		curState = frontier.popleft()
 		explored.add(tuple(curState.board))
 
-		print 
-		print 'curBoard: ', curState.board
-		print '================================'
+		# print 
+		# print 'curBoard: ', curState.board
+		# print '================================'
 		
-		global nodes_expanded
+		global nodes_expanded, max_fringe_size, max_search_depth
 
 		if curState.board == goalBoard:
 			print 'path_to_goal: {}'.format(curState.path)
@@ -82,7 +84,7 @@ def bfs(initBoard, goalBoard):
 			print 'nodes_expanded: {}'.format(nodes_expanded)
 			print 'fringe_size: {}'.format(len(frontier))
 			print 'max_fringe_size: {}'.format(max_fringe_size)
-			print 'search_depth: {}'.format(search_depth)
+			print 'search_depth: {}'.format(curState.depth)
 			print 'max_search_depth: {}'.format(max_search_depth)
 			print 'running_time: {}'.format(time.time()-start_time)
 			print 'max_ram_usage: {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2))
@@ -95,29 +97,33 @@ def bfs(initBoard, goalBoard):
 		if move is not None:
 			childBoard, childPath = move
 			if notInFrontier(frontier, childBoard) and tuple(childBoard) not in explored:
-				print 'up', childBoard
-				frontier.append(State(childBoard, childPath))
+				# print 'up', childBoard
+				frontier.append(State(childBoard, childPath, curState.depth+1))
+				max_fringe_size, max_search_depth = max(max_fringe_size, len(frontier)), max(max_search_depth, curState.depth+1)
 
 		move = curState.down()
 		if move is not None:
 			childBoard, childPath = move
 			if notInFrontier(frontier, childBoard) and tuple(childBoard) not in explored:
-				print 'down', childBoard
-				frontier.append(State(childBoard, childPath))
+				# print 'down', childBoard
+				frontier.append(State(childBoard, childPath, curState.depth+1))
+				max_fringe_size, max_search_depth = max(max_fringe_size, len(frontier)),  max(max_search_depth, curState.depth+1)
 
 		move = curState.left()
 		if move is not None:
 			childBoard, childPath = move
 			if notInFrontier(frontier, childBoard) and tuple(childBoard) not in explored:
-				print 'left', childBoard
-				frontier.append(State(childBoard, childPath))
+				# print 'left', childBoard
+				frontier.append(State(childBoard, childPath, curState.depth+1))
+				max_fringe_size,max_search_depth = max(max_fringe_size, len(frontier)),  max(max_search_depth, curState.depth+1)
 
 		move = curState.right()
 		if move is not None:
 			childBoard, childPath = move
 			if notInFrontier(frontier, childBoard) and tuple(childBoard) not in explored:
-				print 'right', childBoard
-				frontier.append(State(childBoard, childPath))
+				# print 'right', childBoard
+				frontier.append(State(childBoard, childPath, curState.depth+1))
+				max_fringe_size, max_search_depth = max(max_fringe_size, len(frontier)),  max(max_search_depth, curState.depth+1)
 
 	return 'Failure'
 
