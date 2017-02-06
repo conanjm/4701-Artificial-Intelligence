@@ -27,9 +27,10 @@ def dfs(initBoard, goalBoard, initIdx, nodes_expanded):
 
 		if curBoard == goalBoard:
 			path = []
-			while node.parent is not None:
-				path.append(node.move)
-				node = node.parent
+			tmp = node
+			while tmp.parent is not None:
+				path.append(tmp.move)
+				tmp = tmp.parent
 			path.reverse()
 			print 'path_to_goal: ', list(path)
 			print 'cost_of_path: ', len(path)
@@ -58,6 +59,8 @@ def dfs(initBoard, goalBoard, initIdx, nodes_expanded):
 				fidx.append(idx+1)
 				tree.append(Node('Right', node, node.depth+1))
 				max_search_depth = max(max_search_depth, tree[-1].depth)
+				if tree[-1].depth == 0:
+					print tree[-1]
 
 		#left
 		if idx % delta:
@@ -70,6 +73,8 @@ def dfs(initBoard, goalBoard, initIdx, nodes_expanded):
 				fidx.append(idx-1)
 				tree.append(Node('Left', node, node.depth+1))
 				max_search_depth = max(max_search_depth, tree[-1].depth)
+				if tree[-1].depth == 0:
+					print tree[-1]
 
 		#down
 		if idx + delta < len(curBoard):
@@ -82,6 +87,8 @@ def dfs(initBoard, goalBoard, initIdx, nodes_expanded):
 				fidx.append(idx+delta)
 				tree.append(Node('Down', node, node.depth+1))
 				max_search_depth = max(max_search_depth, tree[-1].depth)
+				if tree[-1].depth == 0:
+					print tree[-1]
 				
 		#up
 		if idx - delta >=0:
@@ -94,6 +101,8 @@ def dfs(initBoard, goalBoard, initIdx, nodes_expanded):
 				fidx.append(idx-delta)
 				tree.append(Node('Up', node, node.depth+1))
 				max_search_depth = max(max_search_depth, tree[-1].depth)
+				if tree[-1].depth == 0:
+					print tree[-1]
 
 		max_fringe_size = max( max_fringe_size, len(frontier))
 
