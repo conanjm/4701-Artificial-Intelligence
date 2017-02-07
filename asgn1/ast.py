@@ -165,49 +165,112 @@ def dfs(initBoard, goalBoard):
 		max_fringe_size = max( max_fringe_size, len(frontier))
 
 
-def astar(initBoard, goalBoard):
-	max_fringe_size, max_search_depth, nodes_expanded = 1, 0, 0
-	frontier, fset, explored = [], {initBoard},  set()
-	heuristic = h(initBoard)
-	heapq.heappush(frontier, (heuristic, Node(initBoard, initBoard.index(0), '', None, 0 ) ))
+def ast(initBoard, goalBoard):
+	max_fringe_size, max_search_depth, nodes_expanded, length = 1, 0, 0, (int(sqrt(len(initBoard))))
+	frontier, explored = [], {initBoard}
+	heapq.heappush(frontier, Node(initBoard, initBoard.index(0), '', None, 0 ) )
+	fdict = {initBoard:frontier[0]}
 
 	while len(frontier):
 		node = heapq.heappop(frontier)
-		fset.remove(node.board)
+		del fdict[node.board]
 		explored.add(node.board)
 
 		if node.board == goalBoard:
-			print 'SUCCESS'
+			path = []
+			tmp = node
+			while tmp.parent is not None:
+				path.append(tmp.move)
+				tmp = tmp.parent
+			path.reverse()
+			print 'path_to_goal: ', list(path)
+			print 'cost_of_path: ', len(path)
+			print 'nodes_expanded:', nodes_expanded
+			print 'fringe_size:', len(frontier)
+			print 'max_fringe_size: {}'.format(max_fringe_size)
+			print 'search_depth: {}'.format(node.depth)
+			print 'max_search_depth: {}'.format(max_search_depth)
+			print 'running_time: {}'.format(time.time() - startTime )
+			print 'max_ram_usage: {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2))
+			return
 
 		nodes_expanded += 1
 
-		child = up(frontier, node, fset, explored, length)
-		if child is not None:
-			heapq.heappush(frontier,child)
+		newBoard = up( node, length)
+		if newBoard is not None:
+			if newBoard not in fdict.keys() and newBoard not in explored:
+				child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1 )
+				heapq.heappush(frontier, child )
+				fdict[newBoard] = child
+				max_search_depth = max(max_search_depth, child.depth)
+			elif newBoard in fdict.keys():
+				child = fdict[newBoard]
+				if node.depth+1 < child.depth:
+					child.depth = node.depth+1
+					frontier.remove(child)
+					heapq.heappush(frontier, child)
+			else:
+				pass
 
-		child = down(frontier, node, fset, explored, length)
-		if child is not None:
-			heapq.heappush(frontier,child)
+		newBoard = down( node, length)
+		if newBoard is not None:
+			if newBoard not in fdict.keys() and newBoard not in explored:
+				child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 )
+				heapq.heappush(frontier, child )
+				fdict[newBoard] = child
+				max_search_depth = max(max_search_depth, child.depth)
+			elif newBoard in fdict.keys():
+				child = fdict[newBoard]
+				if node.depth+1 < child.depth:
+					child.depth = node.depth+1
+					frontier.remove(child)
+					heapq.heappush(frontier,child)
+			else:
+				pass
 
-		child = left(frontier, node, fset, explored, length)
-		if child is not None:
-			heapq.heappush(frontier,child)
+		newBoard = left( node, length)
+		if newBoard is not None:
+			if newBoard not in fdict.keys() and newBoard not in explored:
+				child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1 )
+				heapq.heappush(frontier, child )
+				fdict[newBoard] = child
+				max_search_depth = max(max_search_depth, child.depth)
+			elif newBoard in fdict.keys():
+				child = fdict[newBoard]
+				if node.depth+1 < child.depth:
+					child.depth = node.depth+1
+					frontier.remove(child)
+					heapq.heappush(frontier, child)
+			else:
+				pass
 
-		child = right(frontier, node, fset, explored, length)
-		if child is not None:
-			heapq.heappush(frontier,child)
+		newBoard = right( node, length)
+		if newBoard is not None: 
+			if newBoard not in fdict.keys() and newBoard not in explored:
+				child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1 )
+				heapq.heappush(frontier, child )
+				fdict[newBoard] = child
+				max_search_depth = max(max_search_depth, child.depth)
+			elif newBoard in fdict.keys():
+				child = fdict[newBoard]
+				if node.depth+1 < child.depth:
+					child.depth = node.depth+1
+					frontier.remove(child)
+					heapq.heappush(frontier, child)
+			else:
+				pass
+
+		max_fringe_size = max( max_fringe_size, len(frontier))
+
+	return 'Failure'
 			
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
 	startTime = time.time()
 	method, initBoard = sys.argv[1], tuple(map(int, sys.argv[2].split(',')))
 	goalBoard = tuple(range(len(initBoard)))
-	dfs(initBoard, goalBoard)
+	if method == 'dfs':
+		dfs(initBoard, goalBoard)
+	elif method == 'ast':
+		ast(initBoard, goalBoard)
 
