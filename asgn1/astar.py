@@ -37,60 +37,68 @@ class Node:
 		return 1
 		
 
-def up(frontier, node, fset, explored, length):
+def up( node,  length):
 	if node.idx - length >= 0:
 		newBoard = list(node.board)
 		newBoard[node.idx], newBoard[node.idx-length] = newBoard[node.idx-length], newBoard[node.idx] 
-		newBoard = tuple(newBoard)
-		if newBoard not in fset and newBoard not in explored:
-			child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1 )
-			fset.add(child.board)
-			return child
-		return None
+		return tuple(newBoard)
+	return None
+		# newBoard = tuple(newBoard)
+		# if newBoard not in fset and newBoard not in explored:
+		# 	child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1 )
+		# 	fset.add(child.board)
+		# 	return child
+		# return None
 			# frontier.append(child)
 			# return True
 	# return False
 
-
-def down(frontier, node, fset, explored, length):
+def down( node, length):
 	if node.idx + length < len(node.board):
 		newBoard = list(node.board)
 		newBoard[node.idx], newBoard[node.idx+length] = newBoard[node.idx+length], newBoard[node.idx] 
-		newBoard = tuple(newBoard)
-		if newBoard not in fset and newBoard not in explored:
-			child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 )
-			fset.add(child.board)
-			return child
-		return None
+		return tuple(newBoard)
+	return None
+		# newBoard = tuple(newBoard)
+		# if newBoard not in fset and newBoard not in explored:
+		# 	child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 )
+		# 	fset.add(child.board)
+		# 	return child
+		# return None
 	# 		frontier.append(child)
 	# 		return True
 	# return False
 
-def left(frontier, node, fset, explored, length):
+def left(node,  length):
 	if node.idx % length:
 		newBoard = list(node.board)
 		newBoard[node.idx], newBoard[node.idx-1] = newBoard[node.idx-1], newBoard[node.idx] 
-		newBoard = tuple(newBoard)
-		if newBoard not in fset and newBoard not in explored:
-			child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1 )
-			fset.add(child.board)
-			return child
-		return None
+		return tuple(newBoard)
+	return None
+		# newBoard = tuple(newBoard)
+		# return newBoard
+		# if newBoard not in fset and newBoard not in explored:
+		# 	child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1 )
+		# 	fset.add(child.board)
+		# 	return child
+		# return None
 	# 		frontier.append(child)
 	# 		return True
 	# return False
 
-
-def right(frontier, node, fset, explored, length):
+def right( node, length):
 	if (node.idx+1) % length:
 		newBoard = list(node.board)
 		newBoard[node.idx], newBoard[node.idx+1] = newBoard[node.idx+1], newBoard[node.idx] 
-		newBoard = tuple(newBoard)
-		if newBoard not in fset and newBoard not in explored:
-			child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1 )
-			fset.add(child.board)
-			return child
-		return None
+		return tuple(newBoard)
+	return None
+		# newBoard = tuple(newBoard)
+		# if newBoard not in fset and newBoard not in explored:
+		# 	child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1 )
+		# 	fset.add(child.board)
+		# 	return child
+		# elif newBoard 
+		# return None
 	# 		frontier.append(child)
 	# 		return True
 	# return False
@@ -126,21 +134,32 @@ def dfs(initBoard, goalBoard):
 
 		nodes_expanded += 1
 
-		child = right(frontier, node, fset, explored, length)
-		if child is not None:
+		newBoard = right( node, length)
+		if newBoard is not None and newBoard not in fset and newBoard not in explored:
+			child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1 )
 			frontier.append(child)
+			fset.add(child.board)
 			max_search_depth = max(max_search_depth, frontier[-1].depth)
-		child = left(frontier, node, fset, explored, length)
-		if child is not None:
+
+		newBoard = left( node, length)
+		if newBoard is not None and newBoard not in fset and newBoard not in explored:
+			child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1 )
 			frontier.append(child)
+			fset.add(child.board)
 			max_search_depth = max(max_search_depth, frontier[-1].depth)
-		child = down(frontier, node, fset, explored, length)
-		if child is not None:
+
+		newBoard = down( node, length)
+		if newBoard is not None and newBoard not in fset and newBoard not in explored:
+			child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 )
 			frontier.append(child)
+			fset.add(child.board)
 			max_search_depth = max(max_search_depth, frontier[-1].depth)
-		child = up(frontier, node, fset, explored, length)
-		if child is not None:
+		
+		newBoard = up( node, length)
+		if newBoard is not None and newBoard not in fset and newBoard not in explored:
+			child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1 )
 			frontier.append(child)
+			fset.add(child.board)
 			max_search_depth = max(max_search_depth, frontier[-1].depth)
 
 		max_fringe_size = max( max_fringe_size, len(frontier))
@@ -166,16 +185,13 @@ def astar(initBoard, goalBoard):
 		if child is not None:
 			heapq.heappush(frontier,child)
 
-
 		child = down(frontier, node, fset, explored, length)
 		if child is not None:
 			heapq.heappush(frontier,child)
 
-
 		child = left(frontier, node, fset, explored, length)
 		if child is not None:
 			heapq.heappush(frontier,child)
-
 
 		child = right(frontier, node, fset, explored, length)
 		if child is not None:
