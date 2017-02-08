@@ -326,7 +326,71 @@ def ast(initBoard, goalBoard):
 		max_fringe_size = max( max_fringe_size, len(frontier))
 
 	return 'Failure'
+
+def ida(initBoard, goalBoard):
+
+	length = int(sqrt(len(initBoard)))
+	threshold = 0
+	max_fringe_size, max_search_depth = 1, 0
+	while True:
+		nodes_expanded = 0
+		frontier, fset, explored = [ Node(initBoard, initBoard.index(0), '', None, 0)], {initBoard}, set()	
+		while len(frontier):
+			node = frontier.pop()
+			fset.remove(node.board)
+			explored.add(node.board)
+
+			if node.board == goalBoard:
+				path = []
+				tmp = node
+				while tmp.parent is not None:
+					path.append(tmp.move)
+					tmp = tmp.parent
+				path.reverse()
+				print 'path_to_goal: ', list(path)
+				print 'cost_of_path: ', len(path)
+				print 'nodes_expanded:', nodes_expanded
+				print 'fringe_size:', len(frontier)
+				print 'max_fringe_size: {}'.format(max_fringe_size)
+				print 'search_depth: {}'.format(node.depth)
+				print 'max_search_depth: {}'.format(max_search_depth)
+				print 'running_time: {}'.format(time.time() - startTime )
+				print 'max_ram_usage: {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2))
+				return
+
+			nodes_expanded += 1
+
+			newBoard = right( node, length)
+			if newBoard is not None and newBoard not in fset and newBoard not in explored and node.depth + h(newBoard) < threshold:
+				child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1)
+				frontier.append(child)
+				fset.add(child.board)
+				max_search_depth = max(max_search_depth, frontier[-1].depth)
+
+			newBoard = left(node, length)
+			if newBoard is not None and newBoard not in fset and newBoard not in explored and node.depth + h(newBoard) < threshold:
+				child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1 )
+				frontier.append(child)
+				fset.add(child.board)
+				max_search_depth = max(max_search_depth, frontier[-1].depth)
+
+			newBoard = down( node, length)
+			if newBoard is not None and newBoard not in fset and newBoard not in explored and node.depth + h(newBoard) < threshold:
+				child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 )
+				frontier.append(child)
+				fset.add(child.board)
+				max_search_depth = max(max_search_depth, frontier[-1].depth)
 			
+			newBoard = up( node, length)
+			if newBoard is not None and newBoard not in fset and newBoard not in explored and node.depth + h(newBoard) < threshold:
+				child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1 )
+				frontier.append(child)
+				fset.add(child.board)
+				max_search_depth = max(max_search_depth, frontier[-1].depth)
+
+			max_fringe_size = max( max_fringe_size, len(frontier))
+
+		threshold += 1
 
 if __name__ == '__main__':
 	startTime = time.time()
@@ -338,4 +402,8 @@ if __name__ == '__main__':
 		dfs(initBoard, goalBoard)
 	elif method == 'ast':
 		ast(initBoard, goalBoard)
+	elif method == 'ida':
+		ida(initBoard, goalBoard)
+	else:
+		"Please check your input"
 
