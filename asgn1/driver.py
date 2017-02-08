@@ -36,7 +36,6 @@ class Node:
 			return -1
 		return 1
 		
-
 def up(node,  length):
 	if node.idx - length >= 0:
 		newBoard = list(node.board)
@@ -66,21 +65,23 @@ def right( node, length):
 	return None
 
 def output(node, nodes_expanded, frontier, max_fringe_size, max_search_depth):
+	f = open('output.txt', 'wb')
 	path = []
 	tmp = node
 	while tmp.parent is not None:
 		path.append(tmp.move)
 		tmp = tmp.parent
 	path.reverse()
-	print 'path_to_goal: ', list(path)
-	print 'cost_of_path: ', len(path)
-	print 'nodes_expanded:', nodes_expanded
-	print 'fringe_size:', len(frontier)
-	print 'max_fringe_size: {}'.format(max_fringe_size)
-	print 'search_depth: {}'.format(node.depth)
-	print 'max_search_depth: {}'.format(max_search_depth)
-	print 'running_time: {}'.format(time.time() - startTime )
-	print 'max_ram_usage: {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2))
+	f.write('path_to_goal: {}\n'.format(list(path)) )
+	f.write ('cost_of_path: {}\n'.format(len(path)) )
+	f.write ('nodes_expanded: {}\n'.format(nodes_expanded))
+	f.write ('fringe_size: {}\n'.format(len(frontier)))
+	f.write ('max_fringe_size: {}\n'.format(max_fringe_size))
+	f.write ('search_depth: {}\n'.format(node.depth))
+	f.write ('max_search_depth: {}\n'.format(max_search_depth))
+	f.write ('running_time: {}\n'.format(time.time() - startTime ))
+	f.write ('max_ram_usage: {}\n'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2)))
+	f.close()
 	return
 
 
