@@ -37,21 +37,12 @@ class Node:
 		return 1
 		
 
-def up( node,  length):
+def up(node,  length):
 	if node.idx - length >= 0:
 		newBoard = list(node.board)
 		newBoard[node.idx], newBoard[node.idx-length] = newBoard[node.idx-length], newBoard[node.idx] 
 		return tuple(newBoard)
 	return None
-		# newBoard = tuple(newBoard)
-		# if newBoard not in fset and newBoard not in explored:
-		# 	child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1 )
-		# 	fset.add(child.board)
-		# 	return child
-		# return None
-			# frontier.append(child)
-			# return True
-	# return False
 
 def down( node, length):
 	if node.idx + length < len(node.board):
@@ -59,15 +50,6 @@ def down( node, length):
 		newBoard[node.idx], newBoard[node.idx+length] = newBoard[node.idx+length], newBoard[node.idx] 
 		return tuple(newBoard)
 	return None
-		# newBoard = tuple(newBoard)
-		# if newBoard not in fset and newBoard not in explored:
-		# 	child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 )
-		# 	fset.add(child.board)
-		# 	return child
-		# return None
-	# 		frontier.append(child)
-	# 		return True
-	# return False
 
 def left(node,  length):
 	if node.idx % length:
@@ -75,16 +57,6 @@ def left(node,  length):
 		newBoard[node.idx], newBoard[node.idx-1] = newBoard[node.idx-1], newBoard[node.idx] 
 		return tuple(newBoard)
 	return None
-		# newBoard = tuple(newBoard)
-		# return newBoard
-		# if newBoard not in fset and newBoard not in explored:
-		# 	child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1 )
-		# 	fset.add(child.board)
-		# 	return child
-		# return None
-	# 		frontier.append(child)
-	# 		return True
-	# return False
 
 def right( node, length):
 	if (node.idx+1) % length:
@@ -92,20 +64,29 @@ def right( node, length):
 		newBoard[node.idx], newBoard[node.idx+1] = newBoard[node.idx+1], newBoard[node.idx] 
 		return tuple(newBoard)
 	return None
-		# newBoard = tuple(newBoard)
-		# if newBoard not in fset and newBoard not in explored:
-		# 	child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1 )
-		# 	fset.add(child.board)
-		# 	return child
-		# elif newBoard 
-		# return None
-	# 		frontier.append(child)
-	# 		return True
-	# return False
+
+def output(node, nodes_expanded, frontier, max_fringe_size, max_search_depth):
+	path = []
+	tmp = node
+	while tmp.parent is not None:
+		path.append(tmp.move)
+		tmp = tmp.parent
+	path.reverse()
+	print 'path_to_goal: ', list(path)
+	print 'cost_of_path: ', len(path)
+	print 'nodes_expanded:', nodes_expanded
+	print 'fringe_size:', len(frontier)
+	print 'max_fringe_size: {}'.format(max_fringe_size)
+	print 'search_depth: {}'.format(node.depth)
+	print 'max_search_depth: {}'.format(max_search_depth)
+	print 'running_time: {}'.format(time.time() - startTime )
+	print 'max_ram_usage: {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2))
+	return
+
 
 def bfs(initBoard, goalBoard):
 	max_fringe_size, max_search_depth, nodes_expanded, initIdx = 1, 0, 0, initBoard.index(0)
-	frontier, fset, fidx, explored = deque([Node(initBoard, initBoard.index(0), '', None, 0)]), {initBoard}, deque([initIdx]), set()
+	frontier, fset, explored = deque([Node(initBoard, initBoard.index(0), '', None, 0)]), {initBoard},  set()
 
 	while len(frontier):
 		node = frontier.popleft()
@@ -113,21 +94,7 @@ def bfs(initBoard, goalBoard):
 		explored.add(node.board)
 
 		if node.board == goalBoard:
-			path = []
-			tmp = node
-			while tmp.parent is not None:
-				path.append(tmp.move)
-				tmp = tmp.parent
-			path.reverse()
-			print 'path_to_goal: ', list(path)
-			print 'cost_of_path: ', len(path)
-			print 'nodes_expanded:', nodes_expanded
-			print 'fringe_size:', len(frontier)
-			print 'max_fringe_size: {}'.format(max_fringe_size)
-			print 'search_depth: {}'.format(node.depth)
-			print 'max_search_depth: {}'.format(max_search_depth)
-			print 'running_time: {}'.format(time.time() - startTime )
-			print 'max_ram_usage: {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2))
+			output(node, nodes_expanded, frontier, max_fringe_size, max_search_depth)
 			return
 
 		nodes_expanded += 1
@@ -178,21 +145,7 @@ def dfs(initBoard, goalBoard):
 		explored.add(node.board)
 
 		if node.board == goalBoard:
-			path = []
-			tmp = node
-			while tmp.parent is not None:
-				path.append(tmp.move)
-				tmp = tmp.parent
-			path.reverse()
-			print 'path_to_goal: ', list(path)
-			print 'cost_of_path: ', len(path)
-			print 'nodes_expanded:', nodes_expanded
-			print 'fringe_size:', len(frontier)
-			print 'max_fringe_size: {}'.format(max_fringe_size)
-			print 'search_depth: {}'.format(node.depth)
-			print 'max_search_depth: {}'.format(max_search_depth)
-			print 'running_time: {}'.format(time.time() - startTime )
-			print 'max_ram_usage: {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2))
+			output(node, nodes_expanded, frontier, max_fringe_size, max_search_depth)
 			return
 
 		nodes_expanded += 1
@@ -240,21 +193,7 @@ def ast(initBoard, goalBoard):
 		explored.add(node.board)
 
 		if node.board == goalBoard:
-			path = []
-			tmp = node
-			while tmp.parent is not None:
-				path.append(tmp.move)
-				tmp = tmp.parent
-			path.reverse()
-			print 'path_to_goal: ', list(path)
-			print 'cost_of_path: ', len(path)
-			print 'nodes_expanded:', nodes_expanded
-			print 'fringe_size:', len(frontier)
-			print 'max_fringe_size: {}'.format(max_fringe_size)
-			print 'search_depth: {}'.format(node.depth)
-			print 'max_search_depth: {}'.format(max_search_depth)
-			print 'running_time: {}'.format(time.time() - startTime )
-			print 'max_ram_usage: {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2))
+			output(node, nodes_expanded, frontier, max_fringe_size, max_search_depth)
 			return
 
 		nodes_expanded += 1
@@ -341,21 +280,7 @@ def ida(initBoard, goalBoard):
 			explored.add(node.board)
 
 			if node.board == goalBoard:
-				path = []
-				tmp = node
-				while tmp.parent is not None:
-					path.append(tmp.move)
-					tmp = tmp.parent
-				path.reverse()
-				print 'path_to_goal: ', list(path)
-				print 'cost_of_path: ', len(path)
-				print 'nodes_expanded:', nodes_expanded
-				print 'fringe_size:', len(frontier)
-				print 'max_fringe_size: {}'.format(max_fringe_size)
-				print 'search_depth: {}'.format(node.depth)
-				print 'max_search_depth: {}'.format(max_search_depth)
-				print 'running_time: {}'.format(time.time() - startTime )
-				print 'max_ram_usage: {}'.format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / float(1024**2))
+				output(node, nodes_expanded, frontier, max_fringe_size, max_search_depth)
 				return
 
 			nodes_expanded += 1
