@@ -1,7 +1,7 @@
 import sys, time, resource, heapq
 from math import sqrt, fabs
 from collections import deque
-from copy import deepcopy
+# from copy import deepcopy
 
 def h(board):
 	res, length = 0, int(sqrt(len(board)))
@@ -23,16 +23,17 @@ def getMove(move):
 
 class Node:
 	# move: the move takes from its parent to itself
-	def __init__(self, board, idx, move, parent, depth):
+	def __init__(self, board, idx, move, parent, depth, seq=0):
 		self.board = board
 		self.idx = idx
 		self.move = move
 		self.parent = parent
 		self.depth = depth
+		self.seq = seq;
 
 	def __cmp__(self, other):
 		gself, gother = self.depth + h(self.board), other.depth + h(other.board)
-		if gself < gother or (gself == gother and getMove(self.move) < getMove(other.move) ):
+		if gself < gother or (gself == gother and getMove(self.move) < getMove(other.move) ) or (gself == gother and getMove(self.move) == getMove(other.move) and self.seq < other.seq ):
 			return -1
 		return 1
 		
@@ -183,9 +184,11 @@ def dfs(initBoard, goalBoard):
 
 
 def ast(initBoard, goalBoard):
+	seq = 0
 	max_fringe_size, max_search_depth, nodes_expanded, length = 1, 0, 0, (int(sqrt(len(initBoard))))
-	frontier, explored = [], {initBoard}
-	heapq.heappush(frontier, Node(initBoard, initBoard.index(0), '', None, 0 ) )
+	frontier, explored = [], { initBoard }
+	heapq.heappush(frontier, Node(initBoard, initBoard.index(0), '', None, 0, seq ) )
+	seq += 1
 	fdict = {initBoard:frontier[0]}
 
 	while len(frontier):
@@ -202,7 +205,8 @@ def ast(initBoard, goalBoard):
 		newBoard = up( node, length)
 		if newBoard is not None:
 			if newBoard not in fdict.keys() and newBoard not in explored:
-				child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1 )
+				child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1, seq )
+				seq += 1
 				heapq.heappush(frontier, child )
 				fdict[newBoard] = child
 				max_search_depth = max(max_search_depth, child.depth)
@@ -218,7 +222,8 @@ def ast(initBoard, goalBoard):
 		newBoard = down( node, length)
 		if newBoard is not None:
 			if newBoard not in fdict.keys() and newBoard not in explored:
-				child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 )
+				child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 , seq)
+				seq += 1
 				heapq.heappush(frontier, child )
 				fdict[newBoard] = child
 				max_search_depth = max(max_search_depth, child.depth)
@@ -234,7 +239,8 @@ def ast(initBoard, goalBoard):
 		newBoard = left( node, length)
 		if newBoard is not None:
 			if newBoard not in fdict.keys() and newBoard not in explored:
-				child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1 )
+				child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1, seq )
+				seq += 1
 				heapq.heappush(frontier, child )
 				fdict[newBoard] = child
 				max_search_depth = max(max_search_depth, child.depth)
@@ -250,7 +256,8 @@ def ast(initBoard, goalBoard):
 		newBoard = right( node, length)
 		if newBoard is not None: 
 			if newBoard not in fdict.keys() and newBoard not in explored:
-				child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1 )
+				child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1, seq )
+				seq += 1
 				heapq.heappush(frontier, child )
 				fdict[newBoard] = child
 				max_search_depth = max(max_search_depth, child.depth)
