@@ -1,7 +1,6 @@
 import sys, time, resource, heapq
 from math import sqrt, fabs
 from collections import deque
-# from copy import deepcopy
 
 def h(board):
 	res, length = 0, int(sqrt(len(board)))
@@ -85,7 +84,6 @@ def output(node, nodes_expanded, frontier, max_fringe_size, max_search_depth):
 	f.close()
 	return
 
-
 def bfs(initBoard, goalBoard):
 	max_fringe_size, max_search_depth, nodes_expanded, initIdx = 1, 0, 0, initBoard.index(0)
 	frontier, fset, explored = deque([Node(initBoard, initBoard.index(0), '', None, 0)]), {initBoard},  set()
@@ -135,7 +133,6 @@ def bfs(initBoard, goalBoard):
 
 	return 'Failure'
 
-
 def dfs(initBoard, goalBoard):
 	max_fringe_size, max_search_depth, nodes_expanded = 1, 0, 0
 	frontier, fset, explored = [Node(initBoard, initBoard.index(0), '', None, 0)], {initBoard}, set()	
@@ -182,7 +179,6 @@ def dfs(initBoard, goalBoard):
 
 		max_fringe_size = max( max_fringe_size, len(frontier))
 
-
 def ast(initBoard, goalBoard):
 	seq = 0
 	max_fringe_size, max_search_depth, nodes_expanded, length = 1, 0, 0, (int(sqrt(len(initBoard))))
@@ -208,6 +204,7 @@ def ast(initBoard, goalBoard):
 				child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1, seq )
 				seq += 1
 				heapq.heappush(frontier, child )
+				max_fringe_size = max( max_fringe_size, len(frontier))
 				fdict[newBoard] = child
 				max_search_depth = max(max_search_depth, child.depth)
 			elif newBoard in fdict.keys():
@@ -225,6 +222,7 @@ def ast(initBoard, goalBoard):
 				child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 , seq)
 				seq += 1
 				heapq.heappush(frontier, child )
+				max_fringe_size = max( max_fringe_size, len(frontier))
 				fdict[newBoard] = child
 				max_search_depth = max(max_search_depth, child.depth)
 			elif newBoard in fdict.keys():
@@ -242,6 +240,7 @@ def ast(initBoard, goalBoard):
 				child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1, seq )
 				seq += 1
 				heapq.heappush(frontier, child )
+				max_fringe_size = max( max_fringe_size, len(frontier))
 				fdict[newBoard] = child
 				max_search_depth = max(max_search_depth, child.depth)
 			elif newBoard in fdict.keys():
@@ -259,6 +258,7 @@ def ast(initBoard, goalBoard):
 				child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1, seq )
 				seq += 1
 				heapq.heappush(frontier, child )
+				max_fringe_size = max( max_fringe_size, len(frontier))
 				fdict[newBoard] = child
 				max_search_depth = max(max_search_depth, child.depth)
 			elif newBoard in fdict.keys():
@@ -270,22 +270,22 @@ def ast(initBoard, goalBoard):
 			else:
 				pass
 
-		max_fringe_size = max( max_fringe_size, len(frontier))
-
 	return 'Failure'
 
 def ida(initBoard, goalBoard):
 
 	length = int(sqrt(len(initBoard)))
-	threshold = 0
+	initHeuristic = h(initBoard)
+	threshold = initHeuristic
 	max_fringe_size, max_search_depth = 1, 0
 	while True:
 		nodes_expanded = 0
-		frontier, fset, explored = [ Node(initBoard, initBoard.index(0), '', None, 0)], {initBoard}, set()	
+		frontier, fset, explored  = [ Node(initBoard, initBoard.index(0), '', None, 0, initHeuristic )], {initBoard}, { }
+		delta = float('inf')
 		while len(frontier):
 			node = frontier.pop()
 			fset.remove(node.board)
-			explored.add(node.board)
+			explored[node.board] = node.depth
 
 			if node.board == goalBoard:
 				output(node, nodes_expanded, frontier, max_fringe_size, max_search_depth)
@@ -294,32 +294,48 @@ def ida(initBoard, goalBoard):
 			nodes_expanded += 1
 
 			newBoard = right( node, length)
-			if newBoard is not None and newBoard not in fset and newBoard not in explored and node.depth + h(newBoard) < threshold:
-				child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1)
-				frontier.append(child)
-				fset.add(child.board)
-				max_search_depth = max(max_search_depth, frontier[-1].depth)
+			if newBoard is not None and newBoard not in fset:
+				heuristic = h(newBoard)
+				if node.depth +1+ heuristic <= threshold and ( newBoard not in explored.keys() or explored[newBoard]>node.depth ):
+					child = Node(newBoard, node.idx+1, 'Right', node, node.depth+1)
+					frontier.append(child)
+					fset.add(child.board)
+					max_search_depth = max(max_search_depth, frontier[-1].depth)
+				# else:
+				# 	delta = min(delta, node.depth+1+h(newBoard))
 
 			newBoard = left(node, length)
-			if newBoard is not None and newBoard not in fset and newBoard not in explored and node.depth + h(newBoard) < threshold:
-				child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1 )
-				frontier.append(child)
-				fset.add(child.board)
-				max_search_depth = max(max_search_depth, frontier[-1].depth)
+			if newBoard is not None and newBoard not in fset:
+				heuristic = h(newBoard)
+				if node.depth +1+ heuristic <= threshold and ( newBoard not in explored.keys() or explored[newBoard]>node.depth ):
+					child = Node(newBoard, node.idx-1, 'Left', node, node.depth+1 )
+					frontier.append(child)
+					fset.add(child.board)
+					max_search_depth = max(max_search_depth, frontier[-1].depth)
+				# else:
+				# 	delta = min(delta, node.depth+1+h(newBoard))
 
 			newBoard = down( node, length)
-			if newBoard is not None and newBoard not in fset and newBoard not in explored and node.depth + h(newBoard) < threshold:
-				child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 )
-				frontier.append(child)
-				fset.add(child.board)
-				max_search_depth = max(max_search_depth, frontier[-1].depth)
+			if newBoard is not None and newBoard not in fset:
+				heuristic = h(newBoard)
+				if node.depth +1+ heuristic <= threshold and ( newBoard not in explored.keys() or explored[newBoard]>node.depth ):
+					child = Node(newBoard, node.idx+length, 'Down', node, node.depth+1 )
+					frontier.append(child)
+					fset.add(child.board)
+					max_search_depth = max(max_search_depth, frontier[-1].depth)
+				# else:
+				# 	delta = min(delta, node.depth+1+h(newBoard))
 			
 			newBoard = up( node, length)
-			if newBoard is not None and newBoard not in fset and newBoard not in explored and node.depth + h(newBoard) < threshold:
-				child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1 )
-				frontier.append(child)
-				fset.add(child.board)
-				max_search_depth = max(max_search_depth, frontier[-1].depth)
+			if newBoard is not None and newBoard not in fset:
+				heuristic = h(newBoard)
+				if node.depth +1+ heuristic <= threshold and ( newBoard not in explored.keys() or explored[newBoard]>node.depth ):
+					child = Node(newBoard, node.idx-length, 'Up', node, node.depth+1 )
+					frontier.append(child)
+					fset.add(child.board)
+					max_search_depth = max(max_search_depth, frontier[-1].depth)
+				# else:
+				# 	delta = min(delta, node.depth+1+h(newBoard))
 
 			max_fringe_size = max( max_fringe_size, len(frontier))
 
