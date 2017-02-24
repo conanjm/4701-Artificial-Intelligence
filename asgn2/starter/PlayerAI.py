@@ -1,6 +1,6 @@
 from random import *
 from BaseAI import BaseAI
-import time
+import time, math
 
 vecIndex = [UP, DOWN, LEFT, RIGHT] = range(4)
 
@@ -19,7 +19,15 @@ class PlayerAI(BaseAI):
 					count += 1
 				if i+1 < 4 and grid.map[i][j] == grid.map[i+1][j]:
 					count += 1
-		return float(count) / 25
+		return float(count) / 24
+
+	def maxVal(self, grid):
+		res = -float("inf")
+		for i in xrange(4):
+			for j in xrange(4):
+				if res < grid.map[i][j]:
+					res = grid.map[i][j]
+		return math.log(res, 2) / 11
 
 	def numberOfEmptyTiles(self, grid):
 		count = 0
@@ -59,7 +67,7 @@ class PlayerAI(BaseAI):
 		return float(max(lrIncreCnt, max(lrDecreCnt, max(udIncreCnt, udDecreCnt)))) / 8
 
 	def h(self, grid):
-		return 0.1 * self.monotonic(grid) + 0.5 * self.numberOfEmptyTiles(grid) + 0.4 * self.numberOfSameTiles(grid)
+		return  0.7 *self.numberOfEmptyTiles(grid) + 0.3 * self.numberOfSameTiles(grid) 
 
 	def getChildren(self, moves, grid):
 		children = []
@@ -76,8 +84,8 @@ class PlayerAI(BaseAI):
 			children.append(gridClone)
 		return children
 
-	def terminal_test(self, grid, preTime):
-		if time.clock() - preTime >= 0.0002:
+	def terminal_test(self, grid, preTime ):
+		if time.clock() - preTime >= 0.0001:
 			preTime = time.clock()
 			return True
 		return False
@@ -133,7 +141,6 @@ class PlayerAI(BaseAI):
 
 	def getMove(self, grid):
 		a, b = -float("inf"), float("inf")
+
 		move, utility = self.maximize(grid, a, b, time.clock())
 		return move
-
-
