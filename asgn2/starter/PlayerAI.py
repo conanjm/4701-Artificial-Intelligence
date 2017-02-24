@@ -9,6 +9,22 @@ class PlayerAI(BaseAI):
 	def __init__(self):
 		self.level = 0
 
+	def smooth(self, grid):
+		num, denom = 0, 0
+		for i in xrange(4):
+			for j in xrange(4):
+				if grid.map[i][j] != 0:
+					if j+1<4:
+						denom += 1
+						if grid.map[i][j+1] == grid.map[i][j]:
+							num += 1
+					if i+1<4:
+						denom += 1
+						if grid.map[i+1][j] == grid.map[i][j]:
+							num += 1
+		return float(num) / denom
+
+
 	def numberOfSameTiles(self, grid):
 		count = 0
 		for i in xrange(4):
@@ -35,7 +51,7 @@ class PlayerAI(BaseAI):
 			for j in xrange(4):
 				if grid.map[i][j] == 0:
 					count += 1
-		return float(count) / 16
+		return float(count) / 15
 
 	def monotonic(self, grid):
 		lrIncre, lrDecre, udIncre, udDecre = 0,0,0,0
@@ -47,7 +63,7 @@ class PlayerAI(BaseAI):
 				lrDecre += 1
 			if grid.map[0][i] <= grid.map[1][i] and grid.map[1][i] <= grid.map[2][i] and grid.map[2][i] <= grid.map[3][i]:
 				udIncre += 1
-			if grid.map[0][i] >= grid.map[0][i] and grid.map[0][i] >= grid.map[0][i] and grid.map[0][i] >= grid.map[0][i]:
+			if grid.map[0][i] >= grid.map[1][i] and grid.map[1][i] >= grid.map[2][i] and grid.map[2][i] >= grid.map[3][i]:
 				udDecre += 1
 
 		return float(max(lrIncre, lrDecre) + max(udIncre, udDecre)) / 8
@@ -82,7 +98,7 @@ class PlayerAI(BaseAI):
 	# 	return float(max(lrIncreCnt, lrDecreCnt) + max(udIncreCnt, udDecreCnt)) / 8
 
 	def h(self, grid):
-		return   0.5 * self.numberOfEmptyTiles(grid) + 0.2 * self.numberOfSameTiles(grid) + 0.3 * self.monotonic(grid)
+		return  0.5 * self.numberOfEmptyTiles(grid) + 0.1 * self.monotonic(grid) + 0.4 * self.smooth(grid)
 
 	def getChildren(self, moves, grid):
 		children = []
