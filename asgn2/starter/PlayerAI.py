@@ -22,6 +22,8 @@ class PlayerAI(BaseAI):
 						denom += 1
 						if grid.map[i+1][j] == grid.map[i][j]:
 							num += 1
+		if num == 0:
+			return 0
 		return float(num) / denom
 
 	def largeInEdge(self, grid):
