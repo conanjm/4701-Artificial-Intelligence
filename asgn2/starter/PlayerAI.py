@@ -110,7 +110,7 @@ class PlayerAI(BaseAI):
 	# 	return float(max(lrIncreCnt, lrDecreCnt) + max(udIncreCnt, udDecreCnt)) / 8
 
 	def h(self, grid):
-		return  0.5 * self.numberOfEmptyTiles(grid) + 0.1 * self.monotonic(grid) + 0.4 * self.smooth(grid) 
+		return  0.5 * self.numberOfEmptyTiles(grid) + 0.05 * self.monotonic(grid) + 0.45 * self.smooth(grid) 
 
 
 	def getChildren(self, moves, grid):
