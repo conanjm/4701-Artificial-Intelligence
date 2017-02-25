@@ -24,6 +24,15 @@ class PlayerAI(BaseAI):
 							num += 1
 		return float(num) / denom
 
+	def largeInEdge(self, grid):
+		sum = 0
+		for i in xrange(4):
+			sum += grid.map[i][0]
+			sum += grid.map[i][3]
+		sum += grid.map[0][1] + grid.map[0][2] + grid.map[3][1] + grid.map[3][2]
+		return float(sum) / (8 * grid.getMaxTile())
+
+
 	def maxInCorner(self, grid):
 		return grid.getMaxTile() == grid.map[0][0] or grid.getMaxTile() == grid.map[0][3]  or grid.getMaxTile() == grid.map[3][0] or grid.getMaxTile() == grid.map[3][3] 
 
