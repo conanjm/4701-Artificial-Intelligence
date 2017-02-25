@@ -97,6 +97,7 @@ class PlayerAI(BaseAI):
 	# 			udDecreCnt += 1
 	# 		else:
 	# 			pass
+	#
 	# 	return float(max(lrIncreCnt, lrDecreCnt) + max(udIncreCnt, udDecreCnt)) / 8
 
 	def h(self, grid):
