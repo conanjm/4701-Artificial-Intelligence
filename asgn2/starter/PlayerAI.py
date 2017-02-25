@@ -24,6 +24,8 @@ class PlayerAI(BaseAI):
 							num += 1
 		return float(num) / denom
 
+	def maxInCorner(self, grid):
+		return grid.getMaxTile() == grid.map[0][0] or grid.getMaxTile() == grid.map[0][3]  or grid.getMaxTile() == grid.map[3][0] or grid.getMaxTile() == grid.map[3][3] 
 
 	def numberOfSameTiles(self, grid):
 		count = 0
@@ -32,10 +34,10 @@ class PlayerAI(BaseAI):
 				if grid.map[i][j] == 0:
 					continue;
 				if j+1 < 4 and grid.map[i][j] == grid.map[i][j+1]:
-					count += 1
+					count += math.log(grid.map[i][j], 2)
 				if i+1 < 4 and grid.map[i][j] == grid.map[i+1][j]:
-					count += 1
-		return float(count) / 16
+					count += math.log(grid.map[i][j], 2)
+		return float(count) / (16 * math.log(grid.getMaxTile()))
 
 	def maxVal(self, grid):
 		res = -float("inf") 
@@ -98,7 +100,7 @@ class PlayerAI(BaseAI):
 	# 	return float(max(lrIncreCnt, lrDecreCnt) + max(udIncreCnt, udDecreCnt)) / 8
 
 	def h(self, grid):
-		return  0.5 * self.numberOfEmptyTiles(grid) + 0.15 * self.monotonic(grid) + 0.35 * self.smooth(grid)
+		return  0.5 * self.numberOfEmptyTiles(grid) + 0.1 * self.monotonic(grid) + 0.4 * self.smooth(grid) 
 
 
 	def getChildren(self, moves, grid):
@@ -143,7 +145,7 @@ class PlayerAI(BaseAI):
 
 	def minimize(self, grid, a, b, preTime):
 
-		if time.clock() - preTime >= 0.00015:
+		if time.clock() - preTime >= 0.0001:
 			preTime = time.clock()
 			return None, self.h(grid)
 
