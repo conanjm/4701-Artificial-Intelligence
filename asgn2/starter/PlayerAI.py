@@ -100,6 +100,7 @@ class PlayerAI(BaseAI):
 	def h(self, grid):
 		return  0.5 * self.numberOfEmptyTiles(grid) + 0.15 * self.monotonic(grid) + 0.35 * self.smooth(grid)
 
+
 	def getChildren(self, moves, grid):
 		children = []
 		for move in moves:
