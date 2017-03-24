@@ -9,6 +9,11 @@ def gd(data, labels, alpha, betas):
 def lr(data, labels):
 	data, labels, betas = np.array(data), np.array(labels), np.zeros(len(data[0])+1)
 	data = (data-np.mean(data, axis=0)) / np.std(data, axis=0)
+	data = np.c_[np.ones(len(labels)), data]
+	for i in xrange(100):
+		betas -= 0.5 * np.sum( np.transpose(( np.dot(data, betas) - labels ) * np.transpose(data)), 0 )/ len(labels)
+	print betas
+
 
 
 if __name__ == '__main__':
@@ -17,9 +22,7 @@ if __name__ == '__main__':
 	with open(sys.argv[1], 'rb') as csvfile:
 		reader = csv.reader(csvfile, delimiter=',')
 		for row in reader:
-			tmp = [1.0]
-			tmp += [float(i) for i in row[:-1]]
-			data.append(tmp)
+			data.append([float(i) for i in row[:-1]])
 			labels.append(float(row[-1]))
 
 	lr(data, labels)
