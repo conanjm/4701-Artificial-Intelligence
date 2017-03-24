@@ -7,7 +7,7 @@ def pla(data, labels):
 	while error:
 		error = False
 		for x, y in zip(data, labels):
-			if np.sign(np.dot(x, w)) * y <= 0:
+			if np.dot(x, w) * y <= 0:
 				error = True
 				w += y * x
 
