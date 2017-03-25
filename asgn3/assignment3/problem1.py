@@ -10,8 +10,7 @@ def pla(data, labels):
 			if np.dot(x, w) * y <= 0:
 				error = True
 				w += y * x
-
-		print w
+				print w
 
 
 if __name__=="__main__":
