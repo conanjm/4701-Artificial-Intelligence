@@ -1,17 +1,4 @@
-import csv, sys, numpy as np
-
-def pla(data, labels):
-	data, labels, w = np.array(data), np.array(labels), np.zeros(len(data[0]))
-
-	error = True
-	while error:
-		error = False
-		for x, y in zip(data, labels):
-			if np.dot(x, w) * y <= 0:
-				error = True
-				w += y * x
-				print w
-
+import csv, sys, numpy as np, matplotlib.pyplot as plt
 
 if __name__=="__main__":
 	data, labels = [], []
@@ -23,6 +10,14 @@ if __name__=="__main__":
 			data.append(tmp)
 			labels.append(float(row[-1]))
 
-	pla(data, labels)
-
-
+	data, labels, w = np.array(data), np.array(labels), np.zeros(len(data[0]))
+	error = True
+	with open(sys.argv[2], 'wb') as f:
+		writer = csv.writer(f, delimiter=',')
+		while error:
+			error = False
+			for x, y in zip(data, labels):
+				if np.dot(x, w) * y <= 0:
+					error = True
+					w += y * x
+			writer.writerow(w)
