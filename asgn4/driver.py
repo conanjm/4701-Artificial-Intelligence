@@ -4,27 +4,27 @@ from collections import deque
 def revise(board, domain, i, j):
 	removed = set()
 	for vi in domain[i]:
-		res = False
+		available = False
 		for vj in domain[j]:
 			if vi != vj:
-				res = True
+				available = True
 				break
-		if not res:
+		if not available:
 			removed.add(vi)
 
 	if not removed:
-		return True
+		return False
 
 	for num in removed:
 		domain[i].remove(num)
-	return False
+	return True
 
 
 def ac_3(board):
 	# initialize queue, arcs and domains
 	q, domain = deque(), {}
 	for i in xrange(81):
-		domain[i] = set([board[i]]) if board[i] != 0 else set([range(1,10)])
+		domain[i] = set([board[i]]) if board[i] != 0 else set(range(1,10))
 		row, col = i/9, i%9
 		# arc for same row and same col
 		for v in xrange(9):
@@ -41,6 +41,8 @@ def ac_3(board):
 
 	while len(q):
 		i, j = q.popleft()
+		# if i==79 and j==80:
+		# 	print 'here'
 		if revise(board, domain, i, j):
 			if not domain[i]:
 				return False
@@ -62,17 +64,18 @@ def ac_3(board):
 					for c in xrange((idx % 3)* 3, (idx % 3) * 3 + 3):
 						if r != row and c != col and r * 9 + c != j:
 							q.append((r * 9 + c, i))
-		return True
+	return True
 
 if __name__ == '__main__':
 
-	with open(sys.argv[1]) as ifile:
-		for line in ifile:
-			board = {}
-			for i, ch in enumerate(line):
-				board[i] = ch
+	# with open(sys.argv[1]) as ifile:
+	# 	for line in ifile:
+	board = {}
+	for i, ch in enumerate(sys.argv[1]):
+		if i < 81:
+			board[i] = int(ch)
 
-			if ac_3(board):
-				print "OK"
-			else:
-				print "Not solvable"
+	if ac_3(board):
+		print "OK"
+	else:
+		print "Not solvable"
