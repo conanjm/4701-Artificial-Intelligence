@@ -1,4 +1,4 @@
-import sys, heapq
+import sys, heapq, time
 from collections import deque
 
 def revise(board, domain, i, j):
@@ -64,16 +64,6 @@ def ac_3(board):
 						if r != row and c != col and r * 9 + c != j:
 							q.append((r * 9 + c, i))
 	return True
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -204,6 +194,7 @@ def isConsistent(board, idx, val):
 
 	return True
 
+
 def restore(domain, removed):
 	for rmidx in removed:
 		for val in removed[rmidx]:
@@ -224,41 +215,32 @@ def forwardCheck(board, idx, val, domain, unassigned):
 				removed[k] = set()
 			removed[k].add(val)
 
-		# check same col elements [v, col]
-		k = v*9+col
-		if k in unassigned and v != row and val in domain[k]:
-			if len(domain[k])==1:
-				# restore
-				restore(domain, removed)
-				return False
-			domain[k].remove(val)
-			if k not in removed:
-				removed[k] = set()
-			removed[k].add(val)
+		# # check same col elements [v, col]
+		# k = v*9+col
+		# if k in unassigned and v != row and val in domain[k]:
+		# 	if len(domain[k])==1:
+		# 		# restore
+		# 		restore(domain, removed)
+		# 		return False
+		# 	domain[k].remove(val)
+		# 	if k not in removed:
+		# 		removed[k] = set()
+		# 	removed[k].add(val)
 
-	idx = 3 * (row / 3) + col / 3
-	for r in xrange((idx / 3 ) * 3, (idx / 3) * 3 + 3):
-		for c in xrange((idx % 3)* 3, (idx % 3) * 3 + 3):
-			k = r*9+c
-			if i in unassigned and r != row and c !=col and val in domain[k]:
-				if len(domain[k])==1:
-					restore(domain, removed)
-					return False
-				domain[k].remove(val)
-				if k not in removed:
-					removed[k] = set()
-				removed[k].add(val)
+	# idx = 3 * (row / 3) + col / 3
+	# for r in xrange((idx / 3 ) * 3, (idx / 3) * 3 + 3):
+	# 	for c in xrange((idx % 3)* 3, (idx % 3) * 3 + 3):
+	# 		k = r*9+c
+	# 		if k in unassigned and r != row and c !=col and val in domain[k]:
+	# 			if len(domain[k])==1:
+	# 				restore(domain, removed)
+	# 				return False
+	# 			domain[k].remove(val)
+	# 			if k not in removed:
+	# 				removed[k] = set()
+	# 			removed[k].add(val)
 
 	return removed
-
-
-def mrv(domain, unassigned):
-	minIdx, minVal = -1, float('inf')
-	for i in unassigned:
-		if len(domain[i]) < minVal:
-			minVal = len(domain[i])
-			minIdx = i
-	return minIdx
 
 
 def plainbacktrace(board, unassigned, domain):
@@ -273,6 +255,7 @@ def plainbacktrace(board, unassigned, domain):
 			if isConsistent(board, idx, val):
 				board[idx] = val
 				unassigned.remove(idx)
+
 				removed = forwardCheck(board, idx, val, domain, unassigned )
 				if removed == False:
 					board[idx] = 0
@@ -291,24 +274,13 @@ def plainbacktrace(board, unassigned, domain):
 		return plainbacktrace(board, unassigned, domain)
 
 
-def purebacktrace(board, unassigned, domain):
-	if not unassigned:
-		return True
-
-	idx = mrv(domain, unassigned)
-
-	if board[idx] == 0:
-		for val in xrange(1, 10):
-			if isConsistent(board, idx, val):
-				board[idx] = val
-				unassigned.remove(idx)
-				if purebacktrace(board, unassigned, domain):
-					return True
-				board[idx] = 0
-				unassigned.add(idx)
-	else:
-		return purebacktrace(board, unassigned, domain)
-
+def mrv(domain, unassigned):
+	minIdx, minVal = -1, float('inf')
+	for i in unassigned:
+		if len(domain[i]) < minVal:
+			minVal = len(domain[i])
+			minIdx = i
+	return minIdx
 
 
 def backtrack(board):
@@ -322,9 +294,7 @@ def backtrack(board):
 		else:
 			domain[i] = set(range(1,10))
 
-	return purebacktrace(board, unassigned, domain)
-
-	# return plainbacktrace(board, unassigned, domain)
+	return plainbacktrace(board, unassigned, domain)
 
 	# return backtrace(board, domain, set(range(81)))
 
@@ -333,6 +303,7 @@ if __name__ == '__main__':
 
 	# with open(sys.argv[1]) as ifile:
 	# 	for line in ifile:
+	start = time.time()
 	board = {}
 	for i, ch in enumerate(sys.argv[1]):
 		if i < 81:
@@ -342,4 +313,6 @@ if __name__ == '__main__':
 		print 'ok'
 	else:
 		print 'not solvable'
+
+	print time.time() - start
 
