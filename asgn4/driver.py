@@ -217,24 +217,27 @@ def isConsistent(board, idx, val):
 
 
 
-def plainbacktrace(board, idx, unassigned):
+
+def plainbacktrace(board, unassigned, domain):
 	
 	if not unassigned:
 		return True
+
+	idx = mrv(domain, unassigned)
 
 	if board[idx] == 0:
 		for i in xrange(1, 10):
 			if isConsistent(board, idx, i):
 				board[idx] = i
 				unassigned.remove(idx)
-				if plainbacktrace(board, idx+1, unassigned):
+				if plainbacktrace(board, unassigned, domain):
 					return True
 				board[idx] = 0
 				unassigned.add(idx)
 		return False
 
 	else:
-		return plainbacktrace(board, idx+1, unassigned)
+		return plainbacktrace(board, unassigned, domain)
 
 
 
@@ -249,7 +252,7 @@ def backtrack(board):
 		else:
 			domain[i] = set(range(1,10))
 
-	return plainbacktrace(board, 0, unassigned)
+	return plainbacktrace(board, unassigned, domain)
 
 	# return backtrace(board, domain, set(range(81)))
 
