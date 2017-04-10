@@ -213,9 +213,41 @@ def isConsistent(board, idx, val):
 		for c in xrange((idx % 3)* 3, (idx % 3) * 3 + 3):
 			if board[r*9+c] == val:
 				return False
+
 	return True
 
 
+def fc(board, idx, val, domain, unassigned):
+	row, col = idx/9, idx%9
+	removed = {}
+	for v in xrange(9):
+		# check same row elements [row, v]
+		k = row*9+v
+		if k in unassigned and v != col and val in domain[k]:
+			domain[k].remove(val)
+			if k not in removed:
+				removed[k] = set()
+			removed[k].add(val)
+
+		# check same col elements [v, col]
+		k = v*9+col
+		if k in unassigned and v != row and val in domain[k]:
+			domain[k].remove(val)
+			if k not in removed:
+				removed[k] = set()
+			removed[k].add(val)
+
+	idx = 3 * (row / 3) + col / 3
+	for r in xrange((idx / 3 ) * 3, (idx / 3) * 3 + 3):
+		for c in xrange((idx % 3)* 3, (idx % 3) * 3 + 3):
+			k = r*9+c
+			if i in unassigned and r != row and c !=col and val in domain[k]:
+				domain[k].remove(val)
+				if k not in removed:
+					removed[k] = set()
+				removed[k].add(val)
+
+	return removed
 
 
 def plainbacktrace(board, unassigned, domain):
@@ -226,12 +258,17 @@ def plainbacktrace(board, unassigned, domain):
 	idx = mrv(domain, unassigned)
 
 	if board[idx] == 0:
-		for i in xrange(1, 10):
-			if isConsistent(board, idx, i):
-				board[idx] = i
+		for val in domain[idx]:
+			if isConsistent(board, idx, val):
+				board[idx] = val
 				unassigned.remove(idx)
+				removed = fc(board, idx, val, domain, unassigned )
 				if plainbacktrace(board, unassigned, domain):
 					return True
+				for rmidx in removed:
+					for val in removed[rmidx]:
+						domain[rmidx].add(val)
+						
 				board[idx] = 0
 				unassigned.add(idx)
 		return False
