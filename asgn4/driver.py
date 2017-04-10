@@ -217,34 +217,39 @@ def isConsistent(board, idx, val):
 
 
 
-def plainbacktrace(board, idx):
-	if idx==81:
+def plainbacktrace(board, idx, unassigned):
+	
+	if not unassigned:
 		return True
 
 	if board[idx] == 0:
 		for i in xrange(1, 10):
 			if isConsistent(board, idx, i):
 				board[idx] = i
-				if plainbacktrace(board, idx+1):
+				unassigned.remove(idx)
+				if plainbacktrace(board, idx+1, unassigned):
 					return True
 				board[idx] = 0
+				unassigned.add(idx)
 		return False
 
 	else:
-		return plainbacktrace(board, idx+1)
-
+		return plainbacktrace(board, idx+1, unassigned)
 
 
 
 def backtrack(board):
-	domain = {}
+	domain, unassigned = {}, set(range(81))
+
 	# initialize domain for all variables
 	for i in board:
-		domain[i] = set([board[i]]) if board[i] != 0 else set(range(1, 10))
+		if board[i] != 0:
+			domain[i] = set([board[i]])
+			unassigned.remove(i)
+		else:
+			domain[i] = set(range(1,10))
 
-	# printBoard(board)
-
-	return plainbacktrace(board, 0)
+	return plainbacktrace(board, 0, unassigned)
 
 	# return backtrace(board, domain, set(range(81)))
 
