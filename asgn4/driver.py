@@ -114,6 +114,8 @@ def backtrace(board, domain, unassigned):
 		removed = {}	# this 'removed' variables is to restore to original domains when encounter a failure assignment
 		board[i] = val
 		
+		tryNextVal = False
+
 		# perform forward checking on every unassigned variables
 		# forward check on same row and same col
 		for v in xrange(9):
@@ -125,7 +127,8 @@ def backtrace(board, domain, unassigned):
 
 					unassigned.add(i)
 					board[i] = 'x'
-					return False
+					tryNextVal = True
+					break
 
 				domain[row*9+v].remove(val)
 				if row*9+v not in removed:
@@ -143,12 +146,17 @@ def backtrace(board, domain, unassigned):
 
 					unassigned.add(i)
 					board[i] = 'x'
-					return False
+					tryNextVal = True
+					break
 
 				domain[v*9+col].remove(val)
 				if v*9+col not in removed:
 					removed[v*9+col] = set()
 				removed[v*9+col].add(val)
+
+
+		if tryNextVal == True:
+			continue
 
 		# forward checking for same region unassigned elements [r,c]
 		idx = 3 * (row / 3) + col / 3
@@ -161,12 +169,16 @@ def backtrace(board, domain, unassigned):
 								domain[rm].add(v)
 						unassigned.add(i)
 						board[i] = 'x'
-						return False
+						tryNextVal = True
+						break
 
 					domain[r*9+c].remove(val)
 					if r*9+c not in removed:
 						removed[r*9+c] = set()
 					removed[r*9+c].add(val)
+
+		if tryNextVal == True:
+			continue
 
 		res = backtrace(board, domain, unassigned)
 		if res:
@@ -181,15 +193,60 @@ def backtrace(board, domain, unassigned):
 	return False
 
 
+
+
+
+
+
+
+def isConsistent(board, idx, val):
+	row, col = idx/9, idx%9
+	for v in xrange(9):
+		# check same row elements [row, v]
+		if board[row*9+v] == val:
+			return False
+		# check same col elements [v, col]
+		if board[v*9+col] == val:
+			return False
+	idx = 3 * (row / 3) + col / 3
+	for r in xrange((idx / 3 ) * 3, (idx / 3) * 3 + 3):
+		for c in xrange((idx % 3)* 3, (idx % 3) * 3 + 3):
+			if board[r*9+c] == val:
+				return False
+	return True
+
+
+
+def plainbacktrace(board, idx):
+	if idx==81:
+		return True
+
+	if board[idx] == 0:
+		for i in xrange(1, 10):
+			if isConsistent(board, idx, i):
+				board[idx] = i
+				if plainbacktrace(board, idx+1):
+					return True
+				board[idx] = 0
+		return False
+
+	else:
+		return plainbacktrace(board, idx+1)
+
+
+
+
 def backtrack(board):
 	domain = {}
 	# initialize domain for all variables
 	for i in board:
 		domain[i] = set([board[i]]) if board[i] != 0 else set(range(1, 10))
 
-	printBoard(board)
+	# printBoard(board)
 
-	return backtrace(board, domain, set(range(81)))
+	return plainbacktrace(board, 0)
+
+	# return backtrace(board, domain, set(range(81)))
 
 
 if __name__ == '__main__':
@@ -202,6 +259,7 @@ if __name__ == '__main__':
 			board[i] = int(ch)
 
 	if not backtrack(board):
+		printBoard(board)
 		print 'not solvable'
 	else:
 		printBoard(board)
