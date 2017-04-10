@@ -90,13 +90,7 @@ def printBoard(board):
 	print '================='
 
 
-def mrv(domain, unassigned):
-	minIdx, minVal = -1, float('inf')
-	for i in unassigned:
-		if len(domain[i]) < minVal:
-			minVal = len(domain[i])
-			minIdx = i
-	return minIdx
+
 
 
 def backtrace(board, domain, unassigned):
@@ -193,12 +187,6 @@ def backtrace(board, domain, unassigned):
 	return False
 
 
-
-
-
-
-
-
 def isConsistent(board, idx, val):
 	row, col = idx/9, idx%9
 	for v in xrange(9):
@@ -210,7 +198,7 @@ def isConsistent(board, idx, val):
 			return False
 	idx = 3 * (row / 3) + col / 3
 	for r in xrange((idx / 3 ) * 3, (idx / 3) * 3 + 3):
-		for c in xrange((idx % 3)* 3, (idx % 3) * 3 + 3):
+		for c in xrange((idx % 3) * 3, (idx % 3) * 3 + 3):
 			if board[r*9+c] == val:
 				return False
 
@@ -222,7 +210,7 @@ def restore(domain, removed):
 			domain[rmidx].add(val)
 
 
-def fc(board, idx, val, domain, unassigned):
+def forwardCheck(board, idx, val, domain, unassigned):
 	row, col = idx/9, idx%9
 	removed = {}
 	for v in xrange(9):
@@ -264,6 +252,15 @@ def fc(board, idx, val, domain, unassigned):
 	return removed
 
 
+def mrv(domain, unassigned):
+	minIdx, minVal = -1, float('inf')
+	for i in unassigned:
+		if len(domain[i]) < minVal:
+			minVal = len(domain[i])
+			minIdx = i
+	return minIdx
+
+
 def plainbacktrace(board, unassigned, domain):
 	
 	if not unassigned:
@@ -276,7 +273,7 @@ def plainbacktrace(board, unassigned, domain):
 			if isConsistent(board, idx, val):
 				board[idx] = val
 				unassigned.remove(idx)
-				removed = fc(board, idx, val, domain, unassigned )
+				removed = forwardCheck(board, idx, val, domain, unassigned )
 				if removed == False:
 					board[idx] = 0
 					unassigned.add(idx)
@@ -294,6 +291,25 @@ def plainbacktrace(board, unassigned, domain):
 		return plainbacktrace(board, unassigned, domain)
 
 
+def purebacktrace(board, unassigned, domain):
+	if not unassigned:
+		return True
+
+	idx = mrv(domain, unassigned)
+
+	if board[idx] == 0:
+		for val in xrange(1, 10):
+			if isConsistent(board, idx, val):
+				board[idx] = val
+				unassigned.remove(idx)
+				if purebacktrace(board, unassigned, domain):
+					return True
+				board[idx] = 0
+				unassigned.add(idx)
+	else:
+		return purebacktrace(board, unassigned, domain)
+
+
 
 def backtrack(board):
 	domain, unassigned = {}, set(range(81))
@@ -306,7 +322,9 @@ def backtrack(board):
 		else:
 			domain[i] = set(range(1,10))
 
-	return plainbacktrace(board, unassigned, domain)
+	return purebacktrace(board, unassigned, domain)
+
+	# return plainbacktrace(board, unassigned, domain)
 
 	# return backtrace(board, domain, set(range(81)))
 
@@ -320,10 +338,8 @@ if __name__ == '__main__':
 		if i < 81:
 			board[i] = int(ch)
 
-	if not backtrack(board):
-		printBoard(board)
-		print 'not solvable'
-	else:
-		printBoard(board)
+	if backtrack(board):
 		print 'ok'
+	else:
+		print 'not solvable'
 
