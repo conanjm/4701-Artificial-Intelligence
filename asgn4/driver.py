@@ -1,4 +1,4 @@
-import sys
+import sys, heapq
 from collections import deque
 
 def revise(board, domain, i, j):
@@ -41,8 +41,7 @@ def ac_3(board):
 
 	while len(q):
 		i, j = q.popleft()
-		# if i==79 and j==80:
-		# 	print 'here'
+
 		if revise(board, domain, i, j):
 			if not domain[i]:
 				return False
@@ -66,6 +65,133 @@ def ac_3(board):
 							q.append((r * 9 + c, i))
 	return True
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def printBoard(board):
+	print '================='
+	for i in xrange(81):
+		print board[i],
+		if i % 9 == 8:
+			print
+	print '================='
+
+
+def mrv(domain, unassigned):
+	minIdx, minVal = -1, float('inf')
+	for i in unassigned:
+		if len(domain[i]) < minVal:
+			minVal = len(domain[i])
+			minIdx = i
+	return minIdx
+
+
+def backtrace(board, domain, unassigned):
+
+	if not unassigned:
+		return True
+
+	# pick out the variable with minimum remaining values
+	i = mrv(domain, unassigned)
+	unassigned.remove(i)
+
+	row, col = i/9, i%9
+	
+	for val in domain[i]:
+		removed = {}	# this 'removed' variables is to restore to original domains when encounter a failure assignment
+		board[i] = val
+		
+		# perform forward checking on every unassigned variables
+		# forward check on same row and same col
+		for v in xrange(9):
+		
+			# check same row unassigned elements [row, v]
+			if v != col and row*9+v in unassigned and val in domain[row*9+v]:
+
+				if len(domain[row*9+v])==1:
+
+					unassigned.add(i)
+					board[i] = 'x'
+					return False
+
+				domain[row*9+v].remove(val)
+				if row*9+v not in removed:
+					removed[row*9+v] = set()
+				removed[row*9+v].add(val)
+
+			# check same col unassigned elements [v, col]
+			if v != row and v*9+col in unassigned and val in domain[v*9+col]:
+				
+				if len(domain[v*9+col])==1:
+					
+					for rm in removed:
+						for v in removed[rm]:
+							domain[rm].add(v)
+
+					unassigned.add(i)
+					board[i] = 'x'
+					return False
+
+				domain[v*9+col].remove(val)
+				if v*9+col not in removed:
+					removed[v*9+col] = set()
+				removed[v*9+col].add(val)
+
+		# forward checking for same region unassigned elements [r,c]
+		idx = 3 * (row / 3) + col / 3
+		for r in xrange((idx / 3 ) * 3, (idx / 3) * 3 + 3):
+			for c in xrange((idx % 3)* 3, (idx % 3) * 3 + 3):
+				if r != row and c != col and r*9+c in unassigned and val in domain[r*9+c]:
+					if len(domain[r*9+c])==1:
+						for rm in removed:
+							for v in removed[rm]:
+								domain[rm].add(v)
+						unassigned.add(i)
+						board[i] = 'x'
+						return False
+
+					domain[r*9+c].remove(val)
+					if r*9+c not in removed:
+						removed[r*9+c] = set()
+					removed[r*9+c].add(val)
+
+		res = backtrace(board, domain, unassigned)
+		if res:
+			return True
+
+		for rm in removed:
+			for v in removed[rm]:
+				domain[rm].add(v)
+
+	unassigned.add(i)
+	board[i] = 'x'
+	return False
+
+
+def backtrack(board):
+	domain = {}
+	# initialize domain for all variables
+	for i in board:
+		domain[i] = set([board[i]]) if board[i] != 0 else set(range(1, 10))
+
+	printBoard(board)
+
+	return backtrace(board, domain, set(range(81)))
+
+
 if __name__ == '__main__':
 
 	# with open(sys.argv[1]) as ifile:
@@ -75,7 +201,9 @@ if __name__ == '__main__':
 		if i < 81:
 			board[i] = int(ch)
 
-	if ac_3(board):
-		print "OK"
+	if not backtrack(board):
+		print 'not solvable'
 	else:
-		print "Not solvable"
+		printBoard(board)
+		print 'ok'
+
