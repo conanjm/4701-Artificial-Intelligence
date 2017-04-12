@@ -61,8 +61,13 @@ def ac_3(board):
 				idx = 3 * (row / 3) + col / 3
 				for r in xrange((idx / 3 ) * 3, (idx / 3) * 3 + 3):
 					for c in xrange((idx % 3)* 3, (idx % 3) * 3 + 3):
-						if r != row and c != col and r * 9 + c != j:
+						k = r*9+c
+						if k != j and r != row and c != col:
 							q.append((r * 9 + c, i))
+
+	for i in xrange(81):
+		if len(domain[i]) != 1:
+			return False
 	return True
 
 
@@ -103,28 +108,26 @@ def restore(domain, removed):
 def forwardCheck(board, idx, val, domain, unassigned):
 	row, col = idx/9, idx%9
 	removed = {}
-	# for v in xrange(9):
-	# 	# check same row elements [row, v]
-	# 	k = row*9+v
-	# 	if k in unassigned and v != col and val in domain[k]:
-	# 		if len(domain[k])==1:
-	# 			return False
-	# 		domain[k].remove(val)
-	# 		if k not in removed:
-	# 			removed[k] = set()
-	# 		removed[k].add(val)
+	for v in xrange(9):
+		k = row*9+v
+		if k in unassigned and v != col and val in domain[k]:
+			if len(domain[k])==1:
+				restore(domain, removed)
+				return False
+			domain[k].remove(val)
+			if k not in removed:
+				removed[k] = set()
+			removed[k].add(val)
 
-		# # check same col elements [v, col]
-		# k = v*9+col
-		# if k in unassigned and v != row and val in domain[k]:
-		# 	if len(domain[k])==1:
-		# 		# # restore
-		# 		# restore(domain, removed)
-		# 		return False
-		# 	domain[k].remove(val)
-		# 	if k not in removed:
-		# 		removed[k] = set()
-		# 	removed[k].add(val)
+		k = v*9+col
+		if k in unassigned and v != row and val in domain[k]:
+			if len(domain[k])==1:
+				restore(domain, removed)
+				return False
+			domain[k].remove(val)
+			if k not in removed:
+				removed[k] = set()
+			removed[k].add(val)
 
 	idx = 3 * (row / 3) + col / 3
 	for r in xrange((idx / 3 ) * 3, (idx / 3) * 3 + 3):
@@ -132,7 +135,7 @@ def forwardCheck(board, idx, val, domain, unassigned):
 			k = r*9+c
 			if k in unassigned and r != row and c !=col and val in domain[k]:
 				if len(domain[k])==1:
-					# restore(domain, removed)
+					restore(domain, removed)
 					return False
 				domain[k].remove(val)
 				if k not in removed:
@@ -151,7 +154,7 @@ def mrv(domain, unassigned):
 	return minIdx
 
 
-def plainbacktrace(board, unassigned, domain):
+def backtrace(board, unassigned, domain):
 	
 	if not unassigned:
 		return True
@@ -170,7 +173,7 @@ def plainbacktrace(board, unassigned, domain):
 					unassigned.add(idx)
 					continue
 
-				if plainbacktrace(board, unassigned, domain):
+				if backtrace(board, unassigned, domain):
 					return True
 
 				restore(domain, removed)
@@ -179,7 +182,7 @@ def plainbacktrace(board, unassigned, domain):
 		return False
 
 	else:
-		return plainbacktrace(board, unassigned, domain)
+		return backtrace(board, unassigned, domain)
 
 
 def backtrack(board):
@@ -193,15 +196,13 @@ def backtrack(board):
 		else:
 			domain[i] = set(range(1,10))
 
-	return plainbacktrace(board, unassigned, domain)
-
-	# return backtrace(board, domain, set(range(81)))
+	return backtrace(board, unassigned, domain)
 
 
 if __name__ == '__main__':
 
 	count = 1
-	with open(sys.argv[1]) as ifile:
+	with open(sys.argv[1]) as ifile, open('output.txt', 'wb') as ofile:
 		for line in ifile:
 			start = time.time()
 			board = {}
@@ -210,10 +211,16 @@ if __name__ == '__main__':
 					board[i] = int(ch)
 
 			if backtrack(board):
-				print count, 'ok', time.time() - start
-				# printBoard(board)
+				for i in xrange(81):
+					ofile.write(str(board[i]))
+					sys.stdout.write(str(board[i]))
+					sys.stdout.flush()
+				ofile.write('\n')
+				print
 			else:
-				print count, 'not solvable', time.time() - start
+				ofile.write('not solvable\n') 
+				# print count, 'not solvable', time.time() - start
+			# print
 			count += 1
 			start = time.time()
 
