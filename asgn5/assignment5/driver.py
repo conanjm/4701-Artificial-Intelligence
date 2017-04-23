@@ -1,4 +1,6 @@
-import csv, glob
+import csv, glob, pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 
 train_path = "./aclImdb/train/" # Change your path accordingly.
 test_path = "../imdb_te.csv" # test data for grade evaluation. Change your path accordingly.
@@ -37,10 +39,56 @@ def imdb_data_preprocess(inpath, outpath="./", name="imdb_tr.csv", mix=False):
                 i += 1
 
 
+def unigram(train_data_path):
+
+    # construct a dataframe training data
+    df = pd.read_csv(train_data_path, delimiter=',')
+    # print df.iloc[0]
+    # print df.text
+
+    # only unigram count
+    count_vect = CountVectorizer()
+    X_train_counts = count_vect.fit_transform(df.text)
+    print X_train_counts.shape
+
+    # unigram with tf-idf
+    tfidf_transformer = TfidfTransformer()
+    X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+    print X_train_tfidf.shape
+
+
+
+
+def bigram(train_data_path):
+
+    # construct a dataframe training data
+    df = pd.read_csv(train_data_path, delimiter=',')    
+
+
+    # only bigram count
+    count_vect = CountVectorizer(ngram_range=(2, 2))
+    X_train_counts = count_vect.fit_transform(df.text)
+    print X_train_counts.shape
+
+
+    # bigram with tf-idf
+    tfidf_transformer = TfidfTransformer()
+    X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+    print X_train_tfidf.shape
+
+
+
+
+
   
 if __name__ == "__main__":
-    
-    imdb_data_preprocess(train_path )
+
+    # imdb_data_preprocess(train_path)
+
+    unigram('./imdb_tr.csv')
+
+    # bigram('./imdb_tr.csv')
+
 
 
 
