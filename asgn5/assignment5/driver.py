@@ -1,10 +1,11 @@
 import csv, glob, pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import SGDClassifier
+import numpy as np
 
 train_path = "./aclImdb/train/" # Change your path accordingly.
-test_path = "../imdb_te.csv" # test data for grade evaluation. Change your path accordingly.
-
+test_path = "./imdb_te.csv" # test data for grade evaluation. Change your path accordingly.
 
 
 '''
@@ -39,72 +40,65 @@ def imdb_data_preprocess(inpath, outpath="./", name="imdb_tr.csv", mix=False):
                 i += 1
 
 
-def unigram(train_data_path):
+def unigram(df_train, df_test):
 
-    # construct a dataframe training data
-    df = pd.read_csv(train_data_path, delimiter=',')
-    # print df.iloc[0]
-    # print df.text
+    Y = df_train.polarity
 
-    # only unigram count
-    count_vect = CountVectorizer()
-    X_train_counts = count_vect.fit_transform(df.text)
-    print X_train_counts.shape
+    # train a SGD classifier using unigram representation, 
+    # predict sentiments on imdb_te.csv, 
+    # and write output to unigram.output.txt
+    count_vect = CountVectorizer(decode_error='ignore')
+    X_train_counts = count_vect.fit_transform(df_train.text)
+    clf = SGDClassifier(loss="hinge", penalty="l1")
+    clf.fit(X_train_counts, Y)
+    prediction = clf.predict(count_vect.transform(df_test.text))
+    np.savetxt('unigram.output.txt', prediction, fmt='%.0f')
+        
 
-    # unigram with tf-idf
-    tfidf_transformer = TfidfTransformer()
-    X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-    print X_train_tfidf.shape
-
-
-
-
-def bigram(train_data_path):
-
-    # construct a dataframe training data
-    df = pd.read_csv(train_data_path, delimiter=',')    
-
-
-    # only bigram count
-    count_vect = CountVectorizer(ngram_range=(2, 2))
-    X_train_counts = count_vect.fit_transform(df.text)
-    print X_train_counts.shape
-
-
-    # bigram with tf-idf
-    tfidf_transformer = TfidfTransformer()
-    X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-    print X_train_tfidf.shape
+    # train a SGD classifier using unigram representation with tf-idf, 
+    # predict sentiments on imdb_te.csv, and write 
+    # output to unigramtfidf.output.txt
+    vectorizer = TfidfVectorizer(decode_error='ignore')
+    X_train_tfidf = vectorizer.fit_transform(df_train.text)
+    clf.fit(X_train_tfidf, Y)
+    prediction = clf.predict(vectorizer.transform(df_test.text))
+    np.savetxt('unigramtfidf.output.txt', prediction, fmt='%.0f')
 
 
 
+def bigram(df_train, df_test):  
 
+    Y = df_train.polarity
+
+    # train a SGD classifier using bigram representation,
+    # predict sentiments on imdb_te.csv, and write output to
+    # bigram.output.txt
+    count_vect = CountVectorizer(decode_error='ignore',ngram_range=(2, 2))
+    X_train_counts = count_vect.fit_transform(df_train.text)
+    clf = SGDClassifier(loss="hinge", penalty="l1")
+    clf.fit(X_train_counts, Y)
+    prediction = clf.predict(count_vect.transform(df_test.text))
+    np.savetxt('bigram.output.txt', prediction, fmt='%.0f')
+
+
+    # train a SGD classifier using bigram representation with tf-idf, 
+    # predict sentiments on imdb_te.csv, and write 
+    # output to bigramtfidf.output.txt
+    vectorizer = TfidfVectorizer(decode_error='ignore')
+    X_train_tfidf = vectorizer.fit_transform(df_train.text)
+    clf.fit(X_train_tfidf, Y)
+    prediction = clf.predict(vectorizer.transform(df_test.text))
+    np.savetxt('bigramtfidf.output.txt', prediction, fmt='%.0f')
 
   
 if __name__ == "__main__":
 
     # imdb_data_preprocess(train_path)
+    df_train, df_test = pd.read_csv('./imdb_tr.csv', delimiter=','), pd.read_csv(test_path, delimiter=',')
+    # print df.iloc[0]
+    # print df.text 
 
-    unigram('./imdb_tr.csv')
+    unigram(df_train, df_test)
 
-    # bigram('./imdb_tr.csv')
+    bigram(df_train, df_test)
 
-
-
-
-'''train a SGD classifier using unigram representation,
-predict sentiments on imdb_te.csv, and write output to
-unigram.output.txt'''
-
-'''train a SGD classifier using bigram representation,
-predict sentiments on imdb_te.csv, and write output to
-unigram.output.txt'''
-
-'''train a SGD classifier using unigram representation
-with tf-idf, predict sentiments on imdb_te.csv, and write 
-output to unigram.output.txt'''
-
-'''train a SGD classifier using bigram representation
-with tf-idf, predict sentiments on imdb_te.csv, and write 
-output to unigram.output.txt'''
-pass
