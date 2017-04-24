@@ -5,8 +5,8 @@ from sklearn.linear_model import SGDClassifier
 import numpy as np
 
 train_path = "aclImdb/train/" # Change your path accordingly.
-# test_path = "imdb_te.csv" # test data for grade evaluation. Change your path accordingly.
-test_path = "mytest.csv" 
+test_path = "imdb_te.csv" # test data for grade evaluation. Change your path accordingly.
+# test_path = "mytest.csv" 
 
 '''
 Implement this module to extract
