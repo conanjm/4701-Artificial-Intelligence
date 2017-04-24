@@ -4,9 +4,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import SGDClassifier
 import numpy as np
 
-train_path = "./aclImdb/train/" # Change your path accordingly.
-test_path = "./imdb_te.csv" # test data for grade evaluation. Change your path accordingly.
-
+train_path = "aclImdb/train/" # Change your path accordingly.
+# test_path = "imdb_te.csv" # test data for grade evaluation. Change your path accordingly.
+test_path = "mytest.csv" 
 
 '''
 Implement this module to extract
@@ -51,6 +51,7 @@ def unigram(df_train, df_test):
     X_train_counts = count_vect.fit_transform(df_train.text)
     clf = SGDClassifier(loss="hinge", penalty="l1")
     clf.fit(X_train_counts, Y)
+    # print clf.score(count_vect.transform(df_test.text), df_test.polarity)
     prediction = clf.predict(count_vect.transform(df_test.text))
     np.savetxt('unigram.output.txt', prediction, fmt='%.0f')
         
@@ -61,6 +62,7 @@ def unigram(df_train, df_test):
     vectorizer = TfidfVectorizer(decode_error='ignore')
     X_train_tfidf = vectorizer.fit_transform(df_train.text)
     clf.fit(X_train_tfidf, Y)
+    # print clf.score(vectorizer.transform(df_test.text), df_test.polarity)
     prediction = clf.predict(vectorizer.transform(df_test.text))
     np.savetxt('unigramtfidf.output.txt', prediction, fmt='%.0f')
 
@@ -77,6 +79,7 @@ def bigram(df_train, df_test):
     X_train_counts = count_vect.fit_transform(df_train.text)
     clf = SGDClassifier(loss="hinge", penalty="l1")
     clf.fit(X_train_counts, Y)
+    # print clf.score(count_vect.transform(df_test.text), df_test.polarity)
     prediction = clf.predict(count_vect.transform(df_test.text))
     np.savetxt('bigram.output.txt', prediction, fmt='%.0f')
 
@@ -87,13 +90,14 @@ def bigram(df_train, df_test):
     vectorizer = TfidfVectorizer(decode_error='ignore')
     X_train_tfidf = vectorizer.fit_transform(df_train.text)
     clf.fit(X_train_tfidf, Y)
+    # print clf.score(vectorizer.transform(df_test.text), df_test.polarity)
     prediction = clf.predict(vectorizer.transform(df_test.text))
     np.savetxt('bigramtfidf.output.txt', prediction, fmt='%.0f')
 
   
 if __name__ == "__main__":
 
-    # imdb_data_preprocess(train_path)
+    imdb_data_preprocess(train_path)
     df_train, df_test = pd.read_csv('./imdb_tr.csv', delimiter=','), pd.read_csv(test_path, delimiter=',')
     # print df.iloc[0]
     # print df.text 
